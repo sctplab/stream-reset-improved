@@ -34,7 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_usrreq.c 344723 2019-03-02 14:15:33Z tuexen $");
+__FBSDID("$FreeBSD: head/sys/netinet/sctp_usrreq.c 344724 2019-03-02 14:30:27Z tuexen $");
 #endif
 
 #include <netinet/sctp_os.h>
@@ -5448,7 +5448,7 @@ sctp_setopt(struct socket *so, int optname, void *optval, size_t optsize,
 		SCTP_CHECK_AND_CAST(strrst, optval, struct sctp_reset_streams, optsize);
 		SCTP_FIND_STCB(inp, stcb, strrst->srs_assoc_id);
 		if (stcb == NULL) {
-		        SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, ENOENT);
+			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, ENOENT);
 			error = ENOENT;
 			break;
 		}
@@ -5458,6 +5458,12 @@ sctp_setopt(struct socket *so, int optname, void *optval, size_t optsize,
 			 */
 			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EOPNOTSUPP);
 			error = EOPNOTSUPP;
+			SCTP_TCB_UNLOCK(stcb);
+			break;
+		}
+		if (SCTP_GET_STATE(stcb) != SCTP_STATE_OPEN) {
+			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EINVAL);
+			error = EINVAL;
 			SCTP_TCB_UNLOCK(stcb);
 			break;
 		}
@@ -5560,7 +5566,7 @@ sctp_setopt(struct socket *so, int optname, void *optval, size_t optsize,
 		SCTP_CHECK_AND_CAST(stradd, optval, struct sctp_add_streams, optsize);
 		SCTP_FIND_STCB(inp, stcb, stradd->sas_assoc_id);
 		if (stcb == NULL) {
-		        SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, ENOENT);
+			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, ENOENT);
 			error = ENOENT;
 			break;
 		}
@@ -5570,6 +5576,12 @@ sctp_setopt(struct socket *so, int optname, void *optval, size_t optsize,
 			 */
 			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EOPNOTSUPP);
 			error = EOPNOTSUPP;
+			SCTP_TCB_UNLOCK(stcb);
+			break;
+		}
+		if (SCTP_GET_STATE(stcb) != SCTP_STATE_OPEN) {
+			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EINVAL);
+			error = EINVAL;
 			SCTP_TCB_UNLOCK(stcb);
 			break;
 		}
@@ -5637,6 +5649,12 @@ sctp_setopt(struct socket *so, int optname, void *optval, size_t optsize,
 			 */
 			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EOPNOTSUPP);
 			error = EOPNOTSUPP;
+			SCTP_TCB_UNLOCK(stcb);
+			break;
+		}
+		if (SCTP_GET_STATE(stcb) != SCTP_STATE_OPEN) {
+			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EINVAL);
+			error = EINVAL;
 			SCTP_TCB_UNLOCK(stcb);
 			break;
 		}
