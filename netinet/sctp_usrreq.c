@@ -34,7 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_usrreq.c 344721 2019-03-02 13:12:37Z tuexen $");
+__FBSDID("$FreeBSD: head/sys/netinet/sctp_usrreq.c 344723 2019-03-02 14:15:33Z tuexen $");
 #endif
 
 #include <netinet/sctp_os.h>
@@ -3313,59 +3313,63 @@ sctp_getopt(struct socket *so, int optname, void *optval, size_t *optsize,
 		sstat->sstat_instrms = stcb->asoc.streamincnt;
 		sstat->sstat_outstrms = stcb->asoc.streamoutcnt;
 		sstat->sstat_fragmentation_point = sctp_get_frag_point(stcb, &stcb->asoc);
-#ifdef HAVE_SA_LEN
-		memcpy(&sstat->sstat_primary.spinfo_address,
-		       &stcb->asoc.primary_destination->ro._l_addr,
-		       ((struct sockaddr *)(&stcb->asoc.primary_destination->ro._l_addr))->sa_len);
-#else
-		if (stcb->asoc.primary_destination->ro._l_addr.sa.sa_family == AF_INET) {
-			memcpy(&sstat->sstat_primary.spinfo_address,
-			       &stcb->asoc.primary_destination->ro._l_addr,
-			       sizeof(struct sockaddr_in));
-		} else {
-			memcpy(&sstat->sstat_primary.spinfo_address,
-			       &stcb->asoc.primary_destination->ro._l_addr,
-			       sizeof(struct sockaddr_in6));
-		}
-#endif
 		net = stcb->asoc.primary_destination;
-		((struct sockaddr_in *)&sstat->sstat_primary.spinfo_address)->sin_port = stcb->rport;
-		/*
-		 * Again the user can get info from sctp_constants.h
-		 * for what the state of the network is.
-		 */
-		if (net->dest_state & SCTP_ADDR_UNCONFIRMED) {
-			/* It's unconfirmed */
-			sstat->sstat_primary.spinfo_state = SCTP_UNCONFIRMED;
-		} else if (net->dest_state & SCTP_ADDR_REACHABLE) {
-			/* It's active */
-			sstat->sstat_primary.spinfo_state = SCTP_ACTIVE;
-		} else {
-			/* It's inactive */
-			sstat->sstat_primary.spinfo_state = SCTP_INACTIVE;
-		}
-		sstat->sstat_primary.spinfo_cwnd = net->cwnd;
-		sstat->sstat_primary.spinfo_srtt = net->lastsa >> SCTP_RTT_SHIFT;
-		sstat->sstat_primary.spinfo_rto = net->RTO;
-		sstat->sstat_primary.spinfo_mtu = net->mtu;
-		switch (stcb->asoc.primary_destination->ro._l_addr.sa.sa_family) {
+		if (net != NULL) {
+#ifdef HAVE_SA_LEN
+			memcpy(&sstat->sstat_primary.spinfo_address,
+			       &stcb->asoc.primary_destination->ro._l_addr,
+			       ((struct sockaddr *)(&stcb->asoc.primary_destination->ro._l_addr))->sa_len);
+#else
+			if (stcb->asoc.primary_destination->ro._l_addr.sa.sa_family == AF_INET) {
+				memcpy(&sstat->sstat_primary.spinfo_address,
+				       &stcb->asoc.primary_destination->ro._l_addr,
+				       sizeof(struct sockaddr_in));
+			} else {
+				memcpy(&sstat->sstat_primary.spinfo_address,
+				       &stcb->asoc.primary_destination->ro._l_addr,
+				       sizeof(struct sockaddr_in6));
+			}
+#endif
+			((struct sockaddr_in *)&sstat->sstat_primary.spinfo_address)->sin_port = stcb->rport;
+			/*
+			 * Again the user can get info from sctp_constants.h
+			 * for what the state of the network is.
+			 */
+			if (net->dest_state & SCTP_ADDR_UNCONFIRMED) {
+				/* It's unconfirmed */
+				sstat->sstat_primary.spinfo_state = SCTP_UNCONFIRMED;
+			} else if (net->dest_state & SCTP_ADDR_REACHABLE) {
+				/* It's active */
+				sstat->sstat_primary.spinfo_state = SCTP_ACTIVE;
+			} else {
+				/* It's inactive */
+				sstat->sstat_primary.spinfo_state = SCTP_INACTIVE;
+			}
+			sstat->sstat_primary.spinfo_cwnd = net->cwnd;
+			sstat->sstat_primary.spinfo_srtt = net->lastsa >> SCTP_RTT_SHIFT;
+			sstat->sstat_primary.spinfo_rto = net->RTO;
+			sstat->sstat_primary.spinfo_mtu = net->mtu;
+			switch (stcb->asoc.primary_destination->ro._l_addr.sa.sa_family) {
 #if defined(INET)
-		case AF_INET:
-			sstat->sstat_primary.spinfo_mtu -= SCTP_MIN_V4_OVERHEAD;
-			break;
+			case AF_INET:
+				sstat->sstat_primary.spinfo_mtu -= SCTP_MIN_V4_OVERHEAD;
+				break;
 #endif
 #if defined(INET6)
-		case AF_INET6:
-			sstat->sstat_primary.spinfo_mtu -= SCTP_MIN_OVERHEAD;
-			break;
+			case AF_INET6:
+				sstat->sstat_primary.spinfo_mtu -= SCTP_MIN_OVERHEAD;
+				break;
 #endif
 #if defined(__Userspace__)
-		case AF_CONN:
-			sstat->sstat_primary.spinfo_mtu -= sizeof(struct sctphdr);
-			break;
+			case AF_CONN:
+				sstat->sstat_primary.spinfo_mtu -= sizeof(struct sctphdr);
+				break;
 #endif
-		default:
-			break;
+			default:
+				break;
+			}
+		} else {
+			memset(&sstat->sstat_primary, 0, sizeof(struct sctp_paddrinfo));
 		}
 		sstat->sstat_primary.spinfo_assoc_id = sctp_get_associd(stcb);
 		SCTP_TCB_UNLOCK(stcb);
