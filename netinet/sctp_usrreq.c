@@ -34,7 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_usrreq.c 344708 2019-03-01 18:47:41Z tuexen $");
+__FBSDID("$FreeBSD: head/sys/netinet/sctp_usrreq.c 344721 2019-03-02 13:12:37Z tuexen $");
 #endif
 
 #include <netinet/sctp_os.h>
@@ -2887,8 +2887,8 @@ sctp_getopt(struct socket *so, int optname, void *optval, size_t *optsize,
 		SCTP_FIND_STCB(inp, stcb, saddr->sget_assoc_id);
 
 		if (stcb) {
-			left = (*optsize) - sizeof(struct sctp_getaddresses);
-			*optsize = sizeof(struct sctp_getaddresses);
+			left = (*optsize) - sizeof(sctp_assoc_t);
+			*optsize = sizeof(sctp_assoc_t);
 			sas = (struct sockaddr_storage *)&saddr->addr[0];
 
 			TAILQ_FOREACH(net, &stcb->asoc.nets, sctp_next) {
@@ -2967,7 +2967,7 @@ sctp_getopt(struct socket *so, int optname, void *optval, size_t *optsize,
 		if (stcb) {
 			SCTP_TCB_UNLOCK(stcb);
 		}
-		*optsize = sizeof(struct sockaddr_storage) + actual;
+		*optsize = sizeof(sctp_assoc_t) + actual;
 		break;
 	}
 	case SCTP_PEER_ADDR_PARAMS:
