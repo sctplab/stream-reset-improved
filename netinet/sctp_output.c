@@ -13865,7 +13865,7 @@ sctp_lower_sosend(struct socket *so,
 #endif
 	if (SCTP_SO_IS_NBIO(so)
 #if defined(__FreeBSD__) && __FreeBSD_version >= 500000
-	     || (flags & MSG_NBIO)
+	     || (flags & (MSG_NBIO | MSG_DONTWAIT)) != 0
 #endif
 	    ) {
 		non_blocking = 1;
