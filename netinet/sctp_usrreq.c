@@ -34,7 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_usrreq.c 343951 2019-02-10 08:28:56Z tuexen $");
+__FBSDID("$FreeBSD: head/sys/netinet/sctp_usrreq.c 343954 2019-02-10 10:42:16Z tuexen $");
 #endif
 
 #include <netinet/sctp_os.h>
@@ -7016,6 +7016,10 @@ sctp_setopt(struct socket *so, int optname, void *optval, size_t optsize,
 					}
 					SCTP_INP_RUNLOCK(inp);
 				}
+			}
+		} else {
+			if (stcb) {
+				SCTP_TCB_UNLOCK(stcb);
 			}
 		}
 		break;
