@@ -171,7 +171,7 @@ typedef struct callout sctp_os_timer_t;
 
 
 /* is the endpoint v6only? */
-#define SCTP_IPV6_V6ONLY(sctp_inpcb)	((sctp_inpcb)->inp_flags & IN6P_IPV6_V6ONLY)
+#define SCTP_IPV6_V6ONLY(sctp_inpcb)	((sctp_inpcb)->ip_inp.inp.inp_flags & IN6P_IPV6_V6ONLY)
 
 /*
  * routes, output, etc.
