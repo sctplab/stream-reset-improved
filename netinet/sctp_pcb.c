@@ -4261,7 +4261,7 @@ sctp_inpcb_free(struct sctp_inpcb *inp, int immediate, int from)
 #else
 	if (inp->inp_vflag & INP_IPV6) {
 #endif
-		ip6_freepcbopts(ip_inp->in6p_outputopts);
+		ip6_freepcbopts(ip_pcb->in6p_outputopts);
 	}
 #endif
 #endif				/* INET6 */
