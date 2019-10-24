@@ -34,7 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_usrreq.c 353480 2019-10-13 18:17:08Z tuexen $");
+__FBSDID("$FreeBSD: head/sys/netinet/sctp_usrreq.c 354018 2019-10-24 09:22:23Z tuexen $");
 #endif
 
 #include <netinet/sctp_os.h>
@@ -180,8 +180,8 @@ sctp_init(void)
 	timeout(sctp_delayed_startup, NULL, 1);
 #endif
 #if defined(__FreeBSD__)
-	EVENTHANDLER_REGISTER(rt_addrmsg, sctp_addr_change_event_handler,
-	    NULL, EVENTHANDLER_PRI_FIRST);
+	SCTP_BASE_VAR(eh_tag) = EVENTHANDLER_REGISTER(rt_addrmsg,
+	    sctp_addr_change_event_handler, NULL, EVENTHANDLER_PRI_FIRST);
 #endif
 }
 
