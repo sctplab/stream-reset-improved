@@ -1532,7 +1532,6 @@ sctp_iterator_worker(void)
 	struct sctp_iterator *it;
 
 	/* This function is called with the WQ lock in place */
-
 	sctp_it_ctl.iterator_running = 1;
 	while ((it = TAILQ_FIRST(&sctp_it_ctl.iteratorhead)) != NULL) {
 		/* now lets work on this one */
