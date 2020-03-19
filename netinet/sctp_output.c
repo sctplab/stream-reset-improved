@@ -14128,7 +14128,7 @@ sctp_lower_sosend(struct socket *so,
 #endif
 		sctp_abort_an_association(stcb->sctp_ep, stcb, mm, SCTP_SO_LOCKED);
 #if defined(__FreeBSD__)
-	NET_EPOCH_EXIT(et);
+		NET_EPOCH_EXIT(et);
 #endif
 		/* now relock the stcb so everything is sane */
 		hold_tcblock = 0;
@@ -14757,12 +14757,12 @@ dataless_eof:
 					op_err = sctp_generate_cause(SCTP_BASE_SYSCTL(sctp_diag_info_code),
 					                             msg);
 #if defined(__FreeBSD__)
-	NET_EPOCH_ENTER(et);
+					NET_EPOCH_ENTER(et);
 #endif
 					sctp_abort_an_association(stcb->sctp_ep, stcb,
 					                          op_err, SCTP_SO_LOCKED);
 #if defined(__FreeBSD__)
-	NET_EPOCH_EXIT(et);
+					NET_EPOCH_EXIT(et);
 #endif
 					/* now relock the stcb so everything is sane */
 					hold_tcblock = 0;
