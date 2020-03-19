@@ -34,7 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_output.c 359152 2020-03-19 21:01:16Z tuexen $");
+__FBSDID("$FreeBSD: head/sys/netinet/sctp_output.c 359156 2020-03-19 23:07:52Z tuexen $");
 #endif
 
 #include <netinet/sctp_os.h>
@@ -14788,7 +14788,13 @@ skip_out_eof:
 			/* a collision took us forward? */
 			queue_only = 0;
 		} else {
+#if defined(__FreeBSD__)
+			NET_EPOCH_ENTER(et);
+#endif
 			sctp_send_initiate(inp, stcb, SCTP_SO_LOCKED);
+#if defined(__FreeBSD__)
+			NET_EPOCH_EXIT(et);
+#endif
 			SCTP_SET_STATE(stcb, SCTP_STATE_COOKIE_WAIT);
 			queue_only = 1;
 		}
