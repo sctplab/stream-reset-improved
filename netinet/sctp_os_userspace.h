@@ -841,10 +841,9 @@ sctp_hashfreedestroy(void *vhashtbl, struct malloc_type *type, u_long hashmask);
                                   }
 
 #define SCTP_SNPRINTF(data, ...)						\
-	if (snprintf(data, __VA_ARGS__) < 0 ) {					\
+	if (snprintf(data, __VA_ARGS__) < 0) {					\
 		data[0] = '\0';							\
 	}
-#endif
 
 /* We make it so if you have up to 4 threads
  * writting based on the default size of
@@ -904,7 +903,6 @@ static inline void sctp_userspace_rtfree(sctp_rtentry_t *rt)
 		return;
 	}
 	free(rt);
-	rt = NULL;
 }
 #define rtfree(arg1) sctp_userspace_rtfree(arg1)
 
