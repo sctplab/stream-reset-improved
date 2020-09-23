@@ -826,7 +826,6 @@ extern void getwintimeofday(struct timeval *tv);
 #define SCTP_DONOT_SETSCOPE 0
 #define SCTP_DO_SETSCOPE 1
 
-
 /* This value determines the default for when
  * we try to add more on the send queue., if
  * there is room. This prevents us from cycling
