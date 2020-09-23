@@ -7306,7 +7306,6 @@ sctp_hashinit_flags(int elements, struct malloc_type *type,
 	return (hashtbl);
 }
 #endif
-
 #else /*  __Userspace__ ifdef above sctp_soreceive */
 /*
  * __Userspace__ Defining sctp_hashinit_flags() and sctp_hashdestroy() for userland.
