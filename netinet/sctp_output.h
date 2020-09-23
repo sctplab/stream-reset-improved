@@ -71,6 +71,7 @@ sctp_source_address_selection(struct sctp_inpcb *inp,
 #if defined(__FreeBSD__) || defined(__APPLE__) || defined(__Userspace__)
 int
 sctp_v6src_match_nexthop(struct sockaddr_in6 *src6, sctp_route_t *ro);
+
 int
 sctp_v4src_match_nexthop(struct sctp_ifa *sifa, sctp_route_t *ro);
 #endif
@@ -174,8 +175,7 @@ void
 sctp_send_packet_dropped(struct sctp_tcb *, struct sctp_nets *, struct mbuf *,
     int, int, int);
 
-void
-sctp_send_cwr(struct sctp_tcb *, struct sctp_nets *, uint32_t, uint8_t);
+void sctp_send_cwr(struct sctp_tcb *, struct sctp_nets *, uint32_t, uint8_t);
 
 void
 sctp_add_stream_reset_result(struct sctp_tmit_chunk *, uint32_t, uint32_t);
