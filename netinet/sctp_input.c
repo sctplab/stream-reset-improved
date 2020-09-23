@@ -2527,6 +2527,7 @@ sctp_process_cookie_new(struct mbuf *m, int iphlen, int offset,
 	    initack_limit - (initack_offset + sizeof(struct sctp_init_ack_chunk)),
 	    &store.sa, cookie->local_scope, cookie->site_scope,
 	    cookie->ipv4_scope, cookie->loopback_scope);
+
 	return (stcb);
 }
 
