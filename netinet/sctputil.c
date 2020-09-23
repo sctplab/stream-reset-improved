@@ -7170,7 +7170,8 @@ sctp_dynamic_set_primary(struct sockaddr *sa, uint32_t vrf_id)
 
 #if defined(__Userspace__)
 /* no sctp_soreceive for __Userspace__ now */
-#else
+#endif
+#if !defined(__Userspace__)
 int
 sctp_soreceive(	struct socket *so,
 		struct sockaddr **psa,
