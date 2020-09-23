@@ -954,6 +954,7 @@ sctp_sendm(struct socket *so, int flags, struct mbuf *m, struct sockaddr *addr,
 sctp_sendm(struct socket *so, int flags, struct mbuf *m, struct sockaddr *addr,
     struct mbuf *control, struct proc *p);
 #endif
+
 #if !defined(_WIN32) && !defined(__Userspace__)
 #if defined(__FreeBSD__)
 static int
