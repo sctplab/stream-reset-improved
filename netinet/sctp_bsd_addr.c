@@ -302,6 +302,7 @@ sctp_is_vmware_interface(struct ifnet *ifn)
 }
 
 #endif
+
 #if defined(_WIN32) && defined(__Userspace__)
 #ifdef MALLOC
 #undef MALLOC
