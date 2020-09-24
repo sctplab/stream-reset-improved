@@ -34,7 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_lock_bsd.h 365071 2020-09-01 21:19:14Z mjg $");
+__FBSDID("$FreeBSD: head/sys/netinet/sctp_lock_bsd.h 366114 2020-09-24 12:26:06Z tuexen $");
 #endif
 
 #ifndef _NETINET_SCTP_LOCK_BSD_H_
