@@ -8369,7 +8369,6 @@ sctp_listen(struct socket *so, struct proc *p)
 
 	if ((inp->sctp_flags & SCTP_PCB_FLAGS_TCPTYPE) &&
 	    (inp->sctp_flags & SCTP_PCB_FLAGS_CONNECTED)) {
-		/* We are already connected AND the TCP model */
 		SOCK_UNLOCK(so);
 #if defined(__FreeBSD__) && !defined(__Userspace__)
 		solisten_proto_abort(so);
@@ -8394,6 +8393,7 @@ sctp_listen(struct socket *so, struct proc *p)
 		SOCK_UNLOCK(so);
 		inp->sctp_flags |= SCTP_PCB_FLAGS_ACCEPTING;
 	} else {
+		solisten_proto_abort(so);
 		SOCK_UNLOCK(so);
 		if (backlog > 0) {
 			inp->sctp_flags |= SCTP_PCB_FLAGS_ACCEPTING;
