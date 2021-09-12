@@ -4858,7 +4858,7 @@ sctp_aloc_a_assoc_id(struct sctp_inpcb *inp, struct sctp_tcb *stcb)
  * careful to add all additional addresses once they are know right away or
  * else the assoc will be may experience a blackout scenario.
  */
-struct sctp_tcb *
+static struct sctp_tcb *
 sctp_aloc_assoc_locked(struct sctp_inpcb *inp, struct sockaddr *firstaddr,
                        int *error, uint32_t override_tag, uint32_t initial_tsn,
                        uint32_t vrf_id, uint16_t o_streams, uint16_t port,
