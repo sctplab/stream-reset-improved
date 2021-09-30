@@ -13733,7 +13733,7 @@ sctp_lower_sosend(struct socket *so,
 	KASSERT(create_lock_applied == 0, ("create_lock_applied is %d", create_lock_applied));
 	KASSERT(stcb != NULL, ("stcb is NULL"));
 	KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-	SCTP_TCP_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	asoc = &stcb->asoc;
 	if (srcv == NULL) {
@@ -13873,7 +13873,7 @@ sctp_lower_sosend(struct socket *so,
 
 	KASSERT(stcb != NULL, ("stcb is NULL"));
 	KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-	SCTP_TCP_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	/* Are we aborting? */
 	if (sinfo_flags & SCTP_ABORT) {
@@ -13980,7 +13980,7 @@ sctp_lower_sosend(struct socket *so,
 
 	KASSERT(stcb != NULL, ("stcb is NULL"));
 	KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-	SCTP_TCP_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	/* Calculate the maximum we can send */
 	inqueue_bytes = stcb->asoc.total_output_queue_size - (stcb->asoc.chunks_on_out_queue * SCTP_DATA_CHUNK_OVERHEAD(stcb));
@@ -14079,7 +14079,7 @@ sctp_lower_sosend(struct socket *so,
 
 	KASSERT(stcb != NULL, ("stcb is NULL"));
 	KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-	SCTP_TCP_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 skip_preblock:
 	if (stcb->asoc.state & SCTP_STATE_ABOUT_TO_BE_FREED) {
@@ -14175,7 +14175,7 @@ skip_preblock:
 
 		KASSERT(stcb != NULL, ("stcb is NULL"));
 		KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-		SCTP_TCP_LOCK_ASSERT(stcb);
+		SCTP_TCB_LOCK_ASSERT(stcb);
 
 #if defined(__APPLE__) && !defined(__Userspace__)
 #if defined(APPLE_LEOPARD)
@@ -14283,7 +14283,7 @@ skip_preblock:
 
 			KASSERT(stcb != NULL, ("stcb is NULL"));
 			KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-			SCTP_TCP_LOCK_ASSERT(stcb);
+			SCTP_TCB_LOCK_ASSERT(stcb);
 
 #if defined(__APPLE__) && !defined(__Userspace__)
 #if defined(APPLE_LEOPARD)
@@ -14476,7 +14476,7 @@ skip_preblock:
 
 		KASSERT(stcb != NULL, ("stcb is NULL"));
 		KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-		SCTP_TCP_LOCK_ASSERT(stcb);
+		SCTP_TCB_LOCK_ASSERT(stcb);
 
 		if ((stcb->asoc.state & SCTP_STATE_ABOUT_TO_BE_FREED) ||
 		    (stcb->asoc.state & SCTP_STATE_WAS_ABORTED)) {
@@ -14526,7 +14526,7 @@ dataless_eof:
 
 	KASSERT(stcb != NULL, ("stcb is NULL"));
 	KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-	SCTP_TCP_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	/* EOF thing ? */
 	if ((sinfo_flags & SCTP_EOF) &&
@@ -14616,7 +14616,7 @@ dataless_eof:
 skip_out_eof:
 	KASSERT(stcb != NULL, ("stcb is NULL"));
 	KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-	SCTP_TCP_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	if (!TAILQ_EMPTY(&stcb->asoc.control_send_queue)) {
 		some_on_control = 1;
@@ -14706,7 +14706,7 @@ skip_out_eof:
 
 	KASSERT(stcb != NULL, ("stcb is NULL"));
 	KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-	SCTP_TCP_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 out:
 #if defined(__APPLE__) && !defined(__Userspace__)
