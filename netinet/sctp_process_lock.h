@@ -80,12 +80,6 @@
 #define SCTP_IPI_COUNT_DESTROY()
 #endif
 
-#define SCTP_TCB_SEND_LOCK_INIT(_tcb)
-#define SCTP_TCB_SEND_LOCK_DESTROY(_tcb)
-#define SCTP_TCB_SEND_LOCK(_tcb)
-#define SCTP_TCB_SEND_UNLOCK(_tcb)
-#define SCTP_TCB_SEND_LOCK_ASSERT(_tcb)
-
 /* Lock for INP */
 #define SCTP_INP_LOCK_INIT(_inp)
 #define SCTP_INP_LOCK_DESTROY(_inp)
@@ -199,16 +193,6 @@
 #endif
 #define SCTP_INP_RLOCK_ASSERT(_tcb)
 #define SCTP_INP_WLOCK_ASSERT(_tcb)
-
-#define SCTP_TCB_SEND_LOCK_INIT(_tcb) \
-	InitializeCriticalSection(&(_tcb)->tcb_send_mtx)
-#define SCTP_TCB_SEND_LOCK_DESTROY(_tcb) \
-	DeleteCriticalSection(&(_tcb)->tcb_send_mtx)
-#define SCTP_TCB_SEND_LOCK(_tcb) \
-	EnterCriticalSection(&(_tcb)->tcb_send_mtx)
-#define SCTP_TCB_SEND_UNLOCK(_tcb) \
-	LeaveCriticalSection(&(_tcb)->tcb_send_mtx)
-#define SCTP_TCB_SEND_LOCK_ASSERT(_tcb)
 
 #define SCTP_INP_INCR_REF(_inp) atomic_add_int(&((_inp)->refcount), 1)
 #define SCTP_INP_DECR_REF(_inp) atomic_add_int(&((_inp)->refcount), -1)
@@ -406,24 +390,6 @@
 	KASSERT(pthread_mutex_trylock(&(_inp)->inp_mtx) == EBUSY, ("%s: inp_mtx not locked", __func__))
 #define SCTP_INP_INCR_REF(_inp) atomic_add_int(&((_inp)->refcount), 1)
 #define SCTP_INP_DECR_REF(_inp) atomic_add_int(&((_inp)->refcount), -1)
-
-#define SCTP_TCB_SEND_LOCK_INIT(_tcb) \
-	(void)pthread_mutex_init(&(_tcb)->tcb_send_mtx, &SCTP_BASE_VAR(mtx_attr))
-#define SCTP_TCB_SEND_LOCK_DESTROY(_tcb) \
-	(void)pthread_mutex_destroy(&(_tcb)->tcb_send_mtx)
-#ifdef INVARIANTS
-#define SCTP_TCB_SEND_LOCK(_tcb) \
-	KASSERT(pthread_mutex_lock(&(_tcb)->tcb_send_mtx) == 0, ("%s: tcb_send_mtx already locked", __func__))
-#define SCTP_TCB_SEND_UNLOCK(_tcb) \
-	KASSERT(pthread_mutex_unlock(&(_tcb)->tcb_send_mtx) == 0, ("%s: tcb_send_mtx not locked", __func__))
-#else
-#define SCTP_TCB_SEND_LOCK(_tcb) \
-	(void)pthread_mutex_lock(&(_tcb)->tcb_send_mtx)
-#define SCTP_TCB_SEND_UNLOCK(_tcb) \
-	(void)pthread_mutex_unlock(&(_tcb)->tcb_send_mtx)
-#endif
-#define SCTP_TCB_SEND_LOCK_ASSERT(_tcb) \
-	KASSERT(pthread_mutex_trylock(&(_tcb)->tcb_send_mtx) == EBUSY, ("%s: tcb_send_mtx not locked", __func__))
 
 #define SCTP_ASOC_CREATE_LOCK_INIT(_inp) \
 	(void)pthread_mutex_init(&(_inp)->inp_create_mtx, &SCTP_BASE_VAR(mtx_attr))

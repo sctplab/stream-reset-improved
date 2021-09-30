@@ -58,7 +58,7 @@ sctp_ss_default_init(struct sctp_tcb *stcb, struct sctp_association *asoc)
 {
 	uint16_t i;
 
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	asoc->ss_data.locked_on_sending = NULL;
 	asoc->ss_data.last_out_stream = NULL;
@@ -81,7 +81,7 @@ static void
 sctp_ss_default_clear(struct sctp_tcb *stcb, struct sctp_association *asoc,
                       bool clear_values SCTP_UNUSED)
 {
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	while (!TAILQ_EMPTY(&asoc->ss_data.out.wheel)) {
 		struct sctp_stream_out *strq;
@@ -98,6 +98,8 @@ sctp_ss_default_clear(struct sctp_tcb *stcb, struct sctp_association *asoc,
 static void
 sctp_ss_default_init_stream(struct sctp_tcb *stcb, struct sctp_stream_out *strq, struct sctp_stream_out *with_strq)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	if (with_strq != NULL) {
 		if (stcb->asoc.ss_data.locked_on_sending == with_strq) {
 			stcb->asoc.ss_data.locked_on_sending = strq;
@@ -115,7 +117,7 @@ sctp_ss_default_add(struct sctp_tcb *stcb, struct sctp_association *asoc,
                     struct sctp_stream_out *strq,
                     struct sctp_stream_queue_pending *sp SCTP_UNUSED)
 {
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	/* Add to wheel if not already on it and stream queue not empty */
 	if (!TAILQ_EMPTY(&strq->outqueue) && !strq->ss_params.scheduled) {
@@ -129,6 +131,8 @@ sctp_ss_default_add(struct sctp_tcb *stcb, struct sctp_association *asoc,
 static bool
 sctp_ss_default_is_empty(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_association *asoc)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	return (TAILQ_EMPTY(&asoc->ss_data.out.wheel));
 }
 
@@ -137,7 +141,7 @@ sctp_ss_default_remove(struct sctp_tcb *stcb, struct sctp_association *asoc,
                        struct sctp_stream_out *strq,
                        struct sctp_stream_queue_pending *sp SCTP_UNUSED)
 {
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	/* Remove from wheel if stream queue is empty and actually is on the wheel */
 	if (TAILQ_EMPTY(&strq->outqueue) && strq->ss_params.scheduled) {
@@ -164,6 +168,8 @@ sctp_ss_default_select(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_nets *net,
                        struct sctp_association *asoc)
 {
 	struct sctp_stream_out *strq, *strqt;
+
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	if (asoc->ss_data.locked_on_sending) {
 		KASSERT(asoc->ss_data.locked_on_sending->ss_params.scheduled,
@@ -225,6 +231,8 @@ sctp_ss_default_scheduled(struct sctp_tcb *stcb,
 
 	KASSERT(strq != NULL, ("strq is NULL"));
 	KASSERT(strq->ss_params.scheduled, ("strq %p is not scheduled", (void *)strq));
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	asoc->ss_data.last_out_stream = strq;
 	if (asoc->idata_supported == 0) {
 		sp = TAILQ_FIRST(&strq->outqueue);
@@ -243,6 +251,8 @@ static void
 sctp_ss_default_packet_done(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_nets *net SCTP_UNUSED,
                             struct sctp_association *asoc SCTP_UNUSED)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	/* Nothing to be done here */
 	return;
 }
@@ -251,6 +261,8 @@ static int
 sctp_ss_default_get_value(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_association *asoc SCTP_UNUSED,
                           struct sctp_stream_out *strq SCTP_UNUSED, uint16_t *value SCTP_UNUSED)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	/* Nothing to be done here */
 	return (-1);
 }
@@ -259,6 +271,8 @@ static int
 sctp_ss_default_set_value(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_association *asoc SCTP_UNUSED,
                           struct sctp_stream_out *strq SCTP_UNUSED, uint16_t value SCTP_UNUSED)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	/* Nothing to be done here */
 	return (-1);
 }
@@ -268,6 +282,8 @@ sctp_ss_default_is_user_msgs_incomplete(struct sctp_tcb *stcb SCTP_UNUSED, struc
 {
 	struct sctp_stream_out *strq;
 	struct sctp_stream_queue_pending *sp;
+
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	if (asoc->stream_queue_cnt != 1) {
 		return (false);
@@ -294,7 +310,7 @@ sctp_ss_rr_add(struct sctp_tcb *stcb, struct sctp_association *asoc,
 {
 	struct sctp_stream_out *strqt;
 
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	if (!TAILQ_EMPTY(&strq->outqueue) && !strq->ss_params.scheduled) {
 		if (TAILQ_EMPTY(&asoc->ss_data.out.wheel)) {
@@ -324,6 +340,8 @@ static struct sctp_stream_out *
 sctp_ss_rrp_select(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_nets *net SCTP_UNUSED,
                    struct sctp_association *asoc)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	return (asoc->ss_data.last_out_stream);
 }
 
@@ -332,6 +350,8 @@ sctp_ss_rrp_packet_done(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_nets *net
                         struct sctp_association *asoc)
 {
 	struct sctp_stream_out *strq, *strqt;
+
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	strqt = asoc->ss_data.last_out_stream;
 rrp_again:
@@ -385,7 +405,7 @@ static void
 sctp_ss_prio_clear(struct sctp_tcb *stcb, struct sctp_association *asoc,
                    bool clear_values)
 {
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	while (!TAILQ_EMPTY(&asoc->ss_data.out.wheel)) {
 		struct sctp_stream_out *strq;
@@ -405,6 +425,8 @@ sctp_ss_prio_clear(struct sctp_tcb *stcb, struct sctp_association *asoc,
 static void
 sctp_ss_prio_init_stream(struct sctp_tcb *stcb, struct sctp_stream_out *strq, struct sctp_stream_out *with_strq)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	if (with_strq != NULL) {
 		if (stcb->asoc.ss_data.locked_on_sending == with_strq) {
 			stcb->asoc.ss_data.locked_on_sending = strq;
@@ -428,7 +450,7 @@ sctp_ss_prio_add(struct sctp_tcb *stcb, struct sctp_association *asoc,
 {
 	struct sctp_stream_out *strqt;
 
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	/* Add to wheel if not already on it and stream queue not empty */
 	if (!TAILQ_EMPTY(&strq->outqueue) && !strq->ss_params.scheduled) {
@@ -454,7 +476,7 @@ static void
 sctp_ss_prio_remove(struct sctp_tcb *stcb, struct sctp_association *asoc,
                     struct sctp_stream_out *strq, struct sctp_stream_queue_pending *sp SCTP_UNUSED)
 {
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	/* Remove from wheel if stream queue is empty and actually is on the wheel */
 	if (TAILQ_EMPTY(&strq->outqueue) && strq->ss_params.scheduled) {
@@ -481,6 +503,8 @@ sctp_ss_prio_select(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_nets *net,
                     struct sctp_association *asoc)
 {
 	struct sctp_stream_out *strq, *strqt, *strqn;
+
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	if (asoc->ss_data.locked_on_sending) {
 		KASSERT(asoc->ss_data.locked_on_sending->ss_params.scheduled,
@@ -538,6 +562,8 @@ static int
 sctp_ss_prio_get_value(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_association *asoc SCTP_UNUSED,
                        struct sctp_stream_out *strq, uint16_t *value)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	if (strq == NULL) {
 		return (-1);
 	}
@@ -549,6 +575,8 @@ static int
 sctp_ss_prio_set_value(struct sctp_tcb *stcb, struct sctp_association *asoc,
                        struct sctp_stream_out *strq, uint16_t value)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	if (strq == NULL) {
 		return (-1);
 	}
@@ -566,7 +594,7 @@ static void
 sctp_ss_fb_clear(struct sctp_tcb *stcb, struct sctp_association *asoc,
                  bool clear_values)
 {
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	while (!TAILQ_EMPTY(&asoc->ss_data.out.wheel)) {
 		struct sctp_stream_out *strq;
@@ -586,6 +614,8 @@ sctp_ss_fb_clear(struct sctp_tcb *stcb, struct sctp_association *asoc,
 static void
 sctp_ss_fb_init_stream(struct sctp_tcb *stcb, struct sctp_stream_out *strq, struct sctp_stream_out *with_strq)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	if (with_strq != NULL) {
 		if (stcb->asoc.ss_data.locked_on_sending == with_strq) {
 			stcb->asoc.ss_data.locked_on_sending = strq;
@@ -607,7 +637,7 @@ static void
 sctp_ss_fb_add(struct sctp_tcb *stcb, struct sctp_association *asoc,
                struct sctp_stream_out *strq, struct sctp_stream_queue_pending *sp SCTP_UNUSED)
 {
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	if (!TAILQ_EMPTY(&strq->outqueue) && !strq->ss_params.scheduled) {
 		if (strq->ss_params.ss.fb.rounds < 0)
@@ -622,7 +652,7 @@ static void
 sctp_ss_fb_remove(struct sctp_tcb *stcb, struct sctp_association *asoc,
                   struct sctp_stream_out *strq, struct sctp_stream_queue_pending *sp SCTP_UNUSED)
 {
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	/* Remove from wheel if stream queue is empty and actually is on the wheel */
 	if (TAILQ_EMPTY(&strq->outqueue) && strq->ss_params.scheduled) {
@@ -649,6 +679,8 @@ sctp_ss_fb_select(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_nets *net,
                   struct sctp_association *asoc)
 {
 	struct sctp_stream_out *strq = NULL, *strqt;
+
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	if (asoc->ss_data.locked_on_sending) {
 		KASSERT(asoc->ss_data.locked_on_sending->ss_params.scheduled,
@@ -693,6 +725,8 @@ sctp_ss_fb_scheduled(struct sctp_tcb *stcb, struct sctp_nets *net SCTP_UNUSED,
 	struct sctp_stream_out *strqt;
 	int subtract;
 
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	if (asoc->idata_supported == 0) {
 		sp = TAILQ_FIRST(&strq->outqueue);
 		if ((sp != NULL) && (sp->some_taken == 1)) {
@@ -734,7 +768,7 @@ sctp_ss_fcfs_init(struct sctp_tcb *stcb, struct sctp_association *asoc)
 	struct sctp_stream_queue_pending *sp;
 	uint16_t i;
 
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	TAILQ_INIT(&asoc->ss_data.out.list);
 	/*
@@ -770,7 +804,7 @@ sctp_ss_fcfs_clear(struct sctp_tcb *stcb, struct sctp_association *asoc,
 {
 	struct sctp_stream_queue_pending *sp;
 
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	while (!TAILQ_EMPTY(&asoc->ss_data.out.list)) {
 		sp = TAILQ_FIRST(&asoc->ss_data.out.list);
@@ -785,6 +819,8 @@ sctp_ss_fcfs_clear(struct sctp_tcb *stcb, struct sctp_association *asoc,
 static void
 sctp_ss_fcfs_init_stream(struct sctp_tcb *stcb, struct sctp_stream_out *strq, struct sctp_stream_out *with_strq)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	if (with_strq != NULL) {
 		if (stcb->asoc.ss_data.locked_on_sending == with_strq) {
 			stcb->asoc.ss_data.locked_on_sending = strq;
@@ -801,7 +837,7 @@ static void
 sctp_ss_fcfs_add(struct sctp_tcb *stcb, struct sctp_association *asoc,
                  struct sctp_stream_out *strq SCTP_UNUSED, struct sctp_stream_queue_pending *sp)
 {
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	if (!sp->scheduled) {
 		TAILQ_INSERT_TAIL(&asoc->ss_data.out.list, sp, ss_next);
@@ -813,6 +849,8 @@ sctp_ss_fcfs_add(struct sctp_tcb *stcb, struct sctp_association *asoc,
 static bool
 sctp_ss_fcfs_is_empty(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_association *asoc)
 {
+	SCTP_TCB_LOCK_ASSERT(stcb);
+
 	return (TAILQ_EMPTY(&asoc->ss_data.out.list));
 }
 
@@ -820,7 +858,7 @@ static void
 sctp_ss_fcfs_remove(struct sctp_tcb *stcb, struct sctp_association *asoc,
                     struct sctp_stream_out *strq SCTP_UNUSED, struct sctp_stream_queue_pending *sp)
 {
-	SCTP_TCB_SEND_LOCK_ASSERT(stcb);
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	if (sp->scheduled) {
 		TAILQ_REMOVE(&asoc->ss_data.out.list, sp, ss_next);
@@ -835,6 +873,8 @@ sctp_ss_fcfs_select(struct sctp_tcb *stcb SCTP_UNUSED, struct sctp_nets *net,
 {
 	struct sctp_stream_out *strq;
 	struct sctp_stream_queue_pending *sp;
+
+	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	if (asoc->ss_data.locked_on_sending) {
 		return (asoc->ss_data.locked_on_sending);
