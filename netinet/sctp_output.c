@@ -13619,9 +13619,9 @@ sctp_lower_sosend(struct socket *so,
 #ifdef INVARIANTS
 	if (stcb != NULL) {
 		SCTP_TCB_LOCK_ASSERT(stcb);
-		KASSERT(hold_tcblock = 1, ("tcp lock hold, but hold_tcblock %d", hold_tcblock));
+		KASSERT(hold_tcblock == 1, ("tcp lock hold, but hold_tcblock %d", hold_tcblock));
 	} else {
-		KASSERT(hold_tcblock = 0, ("hold_tcblock %d, but stcb is NULL", hold_tcblock));
+		KASSERT(hold_tcblock == 0, ("hold_tcblock %d, but stcb is NULL", hold_tcblock));
 	}
 #endif
 	if ((stcb == NULL) && (addr != NULL)) {
