@@ -14007,8 +14007,6 @@ sctp_lower_sosend(struct socket *so,
 	SCTP_TCB_LOCK_ASSERT(stcb);
 	KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
 	        ("Association about to be freed"));
-	KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	/* Calculate the maximum we can send */
 	inqueue_bytes = asoc->total_output_queue_size - (asoc->chunks_on_out_queue * SCTP_DATA_CHUNK_OVERHEAD(stcb));
@@ -14576,8 +14574,6 @@ dataless_eof:
 	SCTP_TCB_LOCK_ASSERT(stcb);
 	KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
 	        ("Association about to be freed"));
-	KASSERT(hold_tcblock == 1, ("hold_tcblock is %d", hold_tcblock));
-	SCTP_TCB_LOCK_ASSERT(stcb);
 
 	/* EOF thing ? */
 	if ((sinfo_flags & SCTP_EOF) &&
