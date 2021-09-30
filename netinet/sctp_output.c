@@ -13709,7 +13709,7 @@ sctp_lower_sosend(struct socket *so,
 			/* Turn on queue only flag to prevent data from being sent */
 			queue_only = 1;
 			SCTP_SET_STATE(stcb, SCTP_STATE_COOKIE_WAIT);
-			(void)SCTP_GETTIME_TIMEVAL(&stcb->asoc->time_entered);
+			(void)SCTP_GETTIME_TIMEVAL(&stcb->asoc.time_entered);
 			if (control != NULL) {
 				if (sctp_process_cmsgs_for_init(stcb, control, &error)) {
 					sctp_free_assoc(inp, stcb, SCTP_NORMAL_PROC,
