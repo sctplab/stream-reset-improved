@@ -34,7 +34,7 @@
 
 #if defined(__FreeBSD__) && !defined(__Userspace__)
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_crc32.c 362498 2020-06-22 14:36:14Z tuexen $");
+__FBSDID("$FreeBSD$");
 
 #include "opt_sctp.h"
 
@@ -733,31 +733,24 @@ static uint32_t
 #endif
 sctp_finalize_crc32c(uint32_t crc32c)
 {
-	uint32_t result;
 #if BYTE_ORDER == BIG_ENDIAN
-	uint8_t byte0, byte1, byte2, byte3;
+	uint32_t byte0, byte1, byte2, byte3;
 #endif
 
-	/* Complement the result */
-	result = ~crc32c;
 #if BYTE_ORDER == BIG_ENDIAN
 	/*
-	 * For BIG-ENDIAN platforms the result is in little-endian form. So we
-	 * must swap the bytes to return the result in network byte order.
+	 * For BIG-ENDIAN platforms, the result is in LITTLE-ENDIAN byte order.
+	 * For LITTLE-ENDIAN platforms, the result is in in BIG-ENDIAN byte 
+	 * order. So for BIG-ENDIAN platforms the bytes must be swapped to
+	 * return the result always in network byte order (aka BIG-ENDIAN).
 	 */
-	byte0 = result & 0x000000ff;
-	byte1 = (result >> 8) & 0x000000ff;
-	byte2 = (result >> 16) & 0x000000ff;
-	byte3 = (result >> 24) & 0x000000ff;
+	byte0 = crc32c & 0x000000ff;
+	byte1 = (crc32c >> 8) & 0x000000ff;
+	byte2 = (crc32c >> 16) & 0x000000ff;
+	byte3 = (crc32c >> 24) & 0x000000ff;
 	crc32c = ((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3);
-#else
-	/*
-	 * For LITTLE ENDIAN platforms the result is in already in network
-	 * byte order.
-	 */
-	crc32c = result;
 #endif
-	return (crc32c);
+	return (~crc32c);
 }
 
 /*
