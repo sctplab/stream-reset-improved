@@ -740,7 +740,7 @@ sctp_finalize_crc32c(uint32_t crc32c)
 #if BYTE_ORDER == BIG_ENDIAN
 	/*
 	 * For BIG-ENDIAN platforms, the result is in LITTLE-ENDIAN byte order.
-	 * For LITTLE-ENDIAN platforms, the result is in in BIG-ENDIAN byte 
+	 * For LITTLE-ENDIAN platforms, the result is in in BIG-ENDIAN byte
 	 * order. So for BIG-ENDIAN platforms the bytes must be swapped to
 	 * return the result always in network byte order (aka BIG-ENDIAN).
 	 */
