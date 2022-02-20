@@ -13819,7 +13819,7 @@ sctp_lower_sosend(struct socket *so,
 	SCTP_TCB_LOCK_ASSERT(stcb);
 	asoc = &stcb->asoc;
 	KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
-		("Association about to be freed"));
+	        ("Association about to be freed"));
 	/* Keep the stcb from being freed under our feet. */
 	atomic_add_int(&asoc->refcnt, 1);
 	free_cnt_applied = true;
@@ -13960,7 +13960,7 @@ sctp_lower_sosend(struct socket *so,
 	KASSERT(hold_tcblock, ("hold_tcblock is false"));
 	SCTP_TCB_LOCK_ASSERT(stcb);
 	KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
-		("Association about to be freed"));
+	        ("Association about to be freed"));
 
 	/* Are we aborting? */
 	if (sinfo_flags & SCTP_ABORT) {
@@ -14069,7 +14069,7 @@ sctp_lower_sosend(struct socket *so,
 	KASSERT(hold_tcblock, ("hold_tcblock is false"));
 	SCTP_TCB_LOCK_ASSERT(stcb);
 	KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
-		("Association about to be freed"));
+	        ("Association about to be freed"));
 
 	/* Calculate the maximum we can send */
 	inqueue_bytes = asoc->total_output_queue_size - (asoc->chunks_on_out_queue * SCTP_DATA_CHUNK_OVERHEAD(stcb));
@@ -14171,7 +14171,7 @@ skip_preblock:
 	KASSERT(hold_tcblock, ("hold_tcblock is false"));
 	SCTP_TCB_LOCK_ASSERT(stcb);
 	KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
-		("Association about to be freed"));
+	        ("Association about to be freed"));
 
 #if defined(__APPLE__) && !defined(__Userspace__)
 	error = sblock(&so->so_snd, SBLOCKWAIT(flags));
@@ -14408,6 +14408,10 @@ skip_preblock:
 					sp->processing = 0;
 				}
 				SCTP_TCB_SEND_UNLOCK(stcb);
+				if (!hold_tcblock) {
+					SCTP_TCB_LOCK(stcb);
+					hold_tcblock = true;
+				}
 				goto skip_out_eof;
 			}
 			/* What about the INIT, send it maybe */
@@ -14634,13 +14638,13 @@ skip_preblock:
 	if (error != 0) {
 		goto out;
 	}
-dataless_eof:
 
+dataless_eof:
 	KASSERT(stcb != NULL, ("stcb is NULL"));
 	KASSERT(hold_tcblock, ("hold_tcblock is false"));
 	SCTP_TCB_LOCK_ASSERT(stcb);
 	KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
-		("Association about to be freed"));
+	        ("Association about to be freed"));
 
 	/* EOF thing ? */
 	if ((sinfo_flags & SCTP_EOF) &&
@@ -14727,12 +14731,13 @@ dataless_eof:
 			}
 		}
 	}
+
 skip_out_eof:
 	KASSERT(stcb != NULL, ("stcb is NULL"));
 	KASSERT(hold_tcblock, ("hold_tcblock is false"));
 	SCTP_TCB_LOCK_ASSERT(stcb);
 	KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
-		("Association about to be freed"));
+	        ("Association about to be freed"));
 
 	if (!TAILQ_EMPTY(&asoc->control_send_queue)) {
 		some_on_control = 1;
@@ -14824,8 +14829,6 @@ skip_out_eof:
 	KASSERT(stcb != NULL, ("stcb is NULL"));
 	KASSERT(hold_tcblock, ("hold_tcblock is false"));
 	SCTP_TCB_LOCK_ASSERT(stcb);
-	KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
-		("Association about to be freed"));
 
 out:
 #if defined(__APPLE__) && !defined(__Userspace__)
