@@ -14184,7 +14184,7 @@ skip_preblock:
 
 		KASSERT(stcb != NULL, ("stcb is NULL"));
 		KASSERT(hold_tcblock, ("hold_tcblock is false"));
-		SCTP_TCP_LOCK_ASSERT(stcb);
+		SCTP_TCB_LOCK_ASSERT(stcb);
 		KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
 		        ("Association about to be freed"));
 		KASSERT((asoc->state & SCTP_STATE_WAS_ABORTED) == 0,
@@ -14295,7 +14295,7 @@ skip_preblock:
 
 			KASSERT(stcb != NULL, ("stcb is NULL"));
 			KASSERT(hold_tcblock, ("hold_tcblock is false"));
-			SCTP_TCP_LOCK_ASSERT(stcb);
+			SCTP_TCB_LOCK_ASSERT(stcb);
 			KASSERT((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) == 0,
 			        ("Association about to be freed"));
 			KASSERT((asoc->state & SCTP_STATE_WAS_ABORTED) == 0,
