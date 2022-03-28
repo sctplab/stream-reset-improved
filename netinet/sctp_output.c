@@ -13841,7 +13841,7 @@ sctp_lower_sosend(struct socket *so,
 	    (SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_RECEIVED) ||
 	    (SCTP_GET_STATE(stcb) == SCTP_STATE_SHUTDOWN_ACK_SENT) ||
 	    (asoc->state & SCTP_STATE_SHUTDOWN_PENDING)) {
-		if (sinfo_flags & SCTP_ABORT == 0) {
+		if ((sinfo_flags & SCTP_ABORT) == 0) {
 			error = EPIPE;
 			goto out_unlocked;
 		}
@@ -14538,7 +14538,7 @@ skip_preblock:
 	} else {
 		error = sctp_msg_append(stcb, net, top, srcv);
 		top = NULL;
-		if (sinfo_flags & SCTP_EOF != 0) {
+		if ((sinfo_flags & SCTP_EOF) != 0) {
 			got_all_of_the_send = true;
 		}
 	}
