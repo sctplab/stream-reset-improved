@@ -6128,7 +6128,7 @@ sctp_send_initiate_ack(struct sctp_inpcb *inp, struct sctp_tcb *stcb,
 			/* scope_id is only for v6 */
 			stc.scope_id = 0;
 			if ((IN4_ISPRIVATE_ADDRESS(&src4->sin_addr)) ||
-			    (IN4_ISPRIVATE_ADDRESS(&dst4->sin_addr))){
+			    (IN4_ISPRIVATE_ADDRESS(&dst4->sin_addr))) {
 				stc.ipv4_scope = 1;
 			}
 			/* Must use the address in this case */
@@ -13728,7 +13728,7 @@ sctp_lower_sosend(struct socket *so,
 	SCTP_TCB_LOCK_ASSERT(stcb);
 	asoc = &stcb->asoc;
 	if ((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) ||
-	    (asoc->state & SCTP_STATE_WAS_ABORTED) {
+	    (asoc->state & SCTP_STATE_WAS_ABORTED)) {
 		if (asoc->state & SCTP_STATE_WAS_ABORTED) {
 			/* XXX: Could also be ECONNABORTED, not enough info. */
 			error = ECONNRESET;
@@ -13925,7 +13925,7 @@ sctp_lower_sosend(struct socket *so,
 			SCTP_TCB_LOCK(stcb);
 			hold_tcblock = true;
 			if ((asoc->state & SCTP_STATE_ABOUT_TO_BE_FREED) ||
-			    (asoc->state & SCTP_STATE_WAS_ABORTED)){
+			    (asoc->state & SCTP_STATE_WAS_ABORTED)) {
 				sctp_m_freem(mm);
 				if (asoc->state & SCTP_STATE_WAS_ABORTED) {
 					/* XXX: Could also be ECONNABORTED, not enough info. */
