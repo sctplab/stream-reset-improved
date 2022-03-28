@@ -13607,7 +13607,10 @@ sctp_lower_sosend(struct socket *so,
 			SCTP_TCB_LOCK_ASSERT(stcb);
 			hold_tcblock = true;
 		}
+	} else {
+		SCTP_INP_RUNLOCK(inp);
 	}
+
 #ifdef INVARIANTS
 	if (stcb != NULL) {
 		SCTP_TCB_LOCK_ASSERT(stcb);
