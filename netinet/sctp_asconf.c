@@ -2620,7 +2620,7 @@ sctp_compose_asconf(struct sctp_tcb *stcb, int *retlen, int addr_locked)
 	/* Consider ASONF chunk. */
 	overhead += sizeof(struct sctp_asconf_chunk);
 	/* Consider AUTH chunk. */
-	overhead += sctp_get_auth_chunk_len(asoc->peer_hmac_id);
+	overhead += sctp_get_auth_chunk_len(stcb->asoc.peer_hmac_id);
 	if (stcb->asoc.smallest_mtu <= overhead) {
 		/* MTU too small. */
 		return (NULL);
