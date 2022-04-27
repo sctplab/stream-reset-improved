@@ -5440,7 +5440,7 @@ sctp_add_to_readq(struct sctp_inpcb *inp,
 #if defined(__Userspace__)
 	sctp_invoke_recv_callback(inp, stcb, control, SCTP_READ_LOCK_HELD);
 #endif
-	if ((inp != NULL) && (inp->sctp_socket != NULL) {
+	if ((inp != NULL) && (inp->sctp_socket != NULL)) {
 		sctp_wakeup_the_read_socket(inp, stcb, so_locked);
 	}
 	if (inp_read_lock_held == SCTP_READ_LOCK_NOT_HELD) {
