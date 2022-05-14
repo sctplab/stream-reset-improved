@@ -1451,7 +1451,7 @@ sctp_heartbeat_timer(struct sctp_inpcb *inp, struct sctp_tcb *stcb,
 	    (TAILQ_EMPTY(&stcb->asoc.sent_queue))) {
 		sctp_audit_stream_queues_for_size(inp, stcb);
 	}
-	if ((net->dest_state & SCTP_ADDR_NOHB == 0) &&
+	if (((net->dest_state & SCTP_ADDR_NOHB) == 0) &&
 	    (net_was_pf || ((net->dest_state & SCTP_ADDR_PF) == 0))) {
 		/* When moving to PF during threshold management, a HB has been
 		   queued in that routine. */
