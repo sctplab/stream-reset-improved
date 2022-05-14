@@ -6130,7 +6130,7 @@ sctp_setopt(struct socket *so, int optname, void *optval, size_t optsize,
 				/************************NET SPECIFIC SET ******************/
 				if (paddrp->spp_flags & SPP_HB_DISABLE) {
 					if (((net->dest_state & SCTP_ADDR_UNCONFIRMED) == 0) &&
-					    ((net->dest_state & SCTP_ADDR_NOHB == 0))) {
+					    ((net->dest_state & SCTP_ADDR_NOHB) == 0)) {
 						sctp_timer_stop(SCTP_TIMER_TYPE_HEARTBEAT, inp, stcb, net,
 						                SCTP_FROM_SCTP_USRREQ + SCTP_LOC_9);
 					}
@@ -6157,7 +6157,7 @@ sctp_setopt(struct socket *so, int optname, void *optval, size_t optsize,
 				if (paddrp->spp_flags & SPP_PMTUD_DISABLE) {
 					if (SCTP_OS_TIMER_PENDING(&net->pmtu_timer.timer)) {
 						sctp_timer_stop(SCTP_TIMER_TYPE_PATHMTURAISE, inp, stcb, net,
-								SCTP_FROM_SCTP_USRREQ + SCTP_LOC_11);
+						                SCTP_FROM_SCTP_USRREQ + SCTP_LOC_11);
 					}
 					net->dest_state |= SCTP_ADDR_NO_PMTUD;
 					if (paddrp->spp_pathmtu > 0) {
@@ -6306,7 +6306,7 @@ sctp_setopt(struct socket *so, int optname, void *optval, size_t optsize,
 					TAILQ_FOREACH(net, &stcb->asoc.nets, sctp_next) {
 						if (SCTP_OS_TIMER_PENDING(&net->pmtu_timer.timer)) {
 							sctp_timer_stop(SCTP_TIMER_TYPE_PATHMTURAISE, inp, stcb, net,
-									SCTP_FROM_SCTP_USRREQ + SCTP_LOC_16);
+							                SCTP_FROM_SCTP_USRREQ + SCTP_LOC_16);
 						}
 						net->dest_state |= SCTP_ADDR_NO_PMTUD;
 						if (paddrp->spp_pathmtu > 0) {
