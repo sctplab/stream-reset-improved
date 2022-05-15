@@ -12322,7 +12322,7 @@ jump_out:
 		drp->current_onq = htonl(asoc->size_on_reasm_queue +
 		    asoc->size_on_all_streams +
 		    asoc->my_rwnd_control_len +
-		    SCTP_SBAVAIL(stcb->sctp_socket->so_rcv));
+		    SCTP_SBAVAIL(&stcb->sctp_socket->so_rcv));
 	} else {
 		/*-
 		 * If my rwnd is 0, possibly from mbuf depletion as well as

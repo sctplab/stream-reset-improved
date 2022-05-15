@@ -351,7 +351,7 @@ sctp_get_tick_count(void)
 /* wakeup a socket */
 #define SCTP_SOWAKEUP(so)	KeSetEvent(&(so)->so_waitEvent, 0, FALSE)
 /* number of bytes ready to read */
-#define SCTP_SBAVAIL(sb)	(sb).sb_cc
+#define SCTP_SBAVAIL(sb)	(sb)->sb_cc
 /* clear the socket buffer state */
 #define SCTP_SB_CLEAR(sb) do { \
 	(sb).sb_cc = 0; \
