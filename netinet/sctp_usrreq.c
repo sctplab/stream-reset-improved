@@ -874,7 +874,7 @@ sctp_close(struct socket *so)
 #else
 		SCTP_SB_CLEAR(so->so_snd);
 		SCTP_SB_CLEAR(so->so_rcv);
-#end
+#endif
 #if !(defined(__APPLE__) && !defined(__Userspace__))
 		/* Now null out the reference, we are completely detached. */
 		so->so_pcb = NULL;
