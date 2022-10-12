@@ -421,6 +421,7 @@ sctp_process_init_ack(struct mbuf *m, int iphlen, int offset,
 	int nat_friendly = 0;
 
 	/* First verify that we have no illegal param's */
+	asoc = &stcb->asoc;
 	abort_flag = 0;
 	cookie_found = 0;
 
@@ -430,6 +431,7 @@ sctp_process_init_ack(struct mbuf *m, int iphlen, int offset,
 						       &nat_friendly, &cookie_found);
 	if (abort_flag) {
 		/* Send an abort and notify peer */
+		asoc->peer_vtag = ntohl(cp->initiate_tag);
 		sctp_abort_an_association(stcb->sctp_ep, stcb, op_err, false, SCTP_SO_NOT_LOCKED);
 		*abort_no_unlock = 1;
 		return (-1);
@@ -455,6 +457,7 @@ sctp_process_init_ack(struct mbuf *m, int iphlen, int offset,
 			cause->num_missing_params = htonl(1);
 			cause->type[0] = htons(SCTP_STATE_COOKIE);
 		}
+		asoc->peer_vtag = ntohl(cp->initiate_tag);
 		sctp_abort_association(stcb->sctp_ep, stcb, m, iphlen,
 				       src, dst, sh, op_err,
 #if defined(__FreeBSD__) && !defined(__Userspace__)
@@ -464,7 +467,6 @@ sctp_process_init_ack(struct mbuf *m, int iphlen, int offset,
 		*abort_no_unlock = 1;
 		return (-3);
 	}
-	asoc = &stcb->asoc;
 	asoc->peer_supports_nat = (uint8_t)nat_friendly;
 	/* process the peer's parameters in the INIT-ACK */
 	if (sctp_process_init((struct sctp_init_chunk *)cp, stcb) < 0) {
