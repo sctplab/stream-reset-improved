@@ -6078,7 +6078,7 @@ sctp_sorecvmsg(struct socket *so,
 	int wakeup_read_socket = 0;
 	int freecnt_applied = 0;
 	int out_flags = 0, in_flags = 0;
-	int block_allowed = 1;
+	int block_allowed;
 	uint32_t freed_so_far = 0;
 	ssize_t copied_so_far = 0;
 	int in_eeor_mode = 0;
@@ -6123,13 +6123,14 @@ sctp_sorecvmsg(struct socket *so,
 		SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTPUTIL, EINVAL);
 		return (EINVAL);
 	}
-	if ((in_flags & (MSG_DONTWAIT
 #if defined(__FreeBSD__) && !defined(__Userspace__)
-			 | MSG_NBIO
+	if ((in_flags & (MSG_DONTWAIT | MSG_NBIO )) || SCTP_SO_IS_NBIO(so)) {
+#else
+	if ((in_flags & MSG_DONTWAIT) || SCTP_SO_IS_NBIO(so)) {
 #endif
-		     )) ||
-	    SCTP_SO_IS_NBIO(so)) {
 		block_allowed = 0;
+	} else {
+		block_allowed = 1;
 	}
 	/* setup the endpoint */
 	inp = (struct sctp_inpcb *)so->so_pcb;
@@ -6305,8 +6306,7 @@ sctp_sorecvmsg(struct socket *so,
 		goto restart;
 	}
 
-	if ((control->length == 0) &&
-	    (control->do_not_ref_stcb)) {
+	if ((control->length == 0) && (control->do_not_ref_stcb)) {
 		/* Clean up code for freeing assoc that left behind a pdapi..
 		 * maybe a peer in EEOR that just closed after sending and
 		 * never indicated a EOR.
@@ -6316,24 +6316,22 @@ sctp_sorecvmsg(struct socket *so,
 			SCTP_INP_READ_LOCK(inp);
 		}
 		control->held_length = 0;
-		if (control->data) {
+		if (control->data != NULL) {
 			/* Hmm there is data here .. fix */
 			struct mbuf *m_tmp;
 			int cnt = 0;
-			m_tmp = control->data;
-			while (m_tmp) {
+
+			for (m_tmp = control->data; m_tmp != NULL; m_tmp = SCTP_BUF_NEXT(m_tmp)) {
 				cnt += SCTP_BUF_LEN(m_tmp);
 				if (SCTP_BUF_NEXT(m_tmp) == NULL) {
 					control->tail_mbuf = m_tmp;
 					control->end_added = 1;
 				}
-				m_tmp = SCTP_BUF_NEXT(m_tmp);
 			}
 			control->length = cnt;
 		} else {
 			/* remove it */
 			TAILQ_REMOVE(&inp->read_queue, control, next);
-			/* Add back any hidden data */
 			sctp_free_remote_addr(control->whoFrom);
 			sctp_free_a_readq(stcb, control);
 		}
@@ -6343,24 +6341,23 @@ sctp_sorecvmsg(struct socket *so,
 		}
 		goto restart;
 	}
-	if ((control->length == 0) &&
-	    (control->end_added == 1)) {
-		/* Do we also need to check for (control->pdapi_aborted == 1)? */
+	if ((control->length == 0) && (control->end_added == 1)) {
+		/* Do we also need to check for control->pdapi_aborted == 1? */
 		if (hold_rlock == 0) {
 			hold_rlock = 1;
 			SCTP_INP_READ_LOCK(inp);
 		}
 		TAILQ_REMOVE(&inp->read_queue, control, next);
-		if (control->data) {
+		if (control->data != NULL) {
 #ifdef INVARIANTS
-			panic("control->data not null but control->length == 0");
+			panic("control->data not NULL but control->length == 0");
 #else
 			SCTP_PRINTF("Strange, data left in the control buffer. Cleaning up.\n");
 			sctp_m_freem(control->data);
 			control->data = NULL;
 #endif
 		}
-		if (control->aux_data) {
+		if (control->aux_data != NULL) {
 			sctp_m_free (control->aux_data);
 			control->aux_data = NULL;
 		}
@@ -6380,31 +6377,31 @@ sctp_sorecvmsg(struct socket *so,
 	}
 	if (control->length == 0) {
 		if ((sctp_is_feature_on(inp, SCTP_PCB_FLAGS_FRAG_INTERLEAVE)) &&
-		    (filling_sinfo)) {
+		    (filling_sinfo != 0)) {
 			/* find a more suitable one then this */
-			ctl = TAILQ_NEXT(control, next);
-			while (ctl) {
-				if ((ctl->stcb != control->stcb) && (ctl->length) &&
+			for (ctl = TAILQ_NEXT(control, next); ctl != NULL; ctl = TAILQ_NEXT(ctl, next)) {
+				if ((ctl->stcb != control->stcb) &&
+				    (ctl->length > 0) &&
 				    (ctl->some_taken ||
 				     (ctl->spec_flags & M_NOTIFICATION) ||
 				     ((ctl->do_not_ref_stcb == 0) &&
-				      (ctl->stcb->asoc.strmin[ctl->sinfo_stream].delivery_started == 0)))
-					) {
+				      (ctl->stcb->asoc.strmin[ctl->sinfo_stream].delivery_started == 0)))) {
 					/*-
 					 * If we have a different TCB next, and there is data
 					 * present. If we have already taken some (pdapi), OR we can
 					 * ref the tcb and no delivery as started on this stream, we
 					 * take it. Note we allow a notification on a different
-					 * assoc to be delivered..
+					 * assoc to be delivered.
 					 */
 					control = ctl;
 					goto found_one;
-				} else if ((sctp_is_feature_on(inp, SCTP_PCB_FLAGS_INTERLEAVE_STRMS)) &&
-					   (ctl->length) &&
-					   ((ctl->some_taken) ||
-					    ((ctl->do_not_ref_stcb == 0) &&
-					     ((ctl->spec_flags & M_NOTIFICATION) == 0) &&
-					     (ctl->stcb->asoc.strmin[ctl->sinfo_stream].delivery_started == 0)))) {
+				} else if ((ctl->stcb == control->stcb) &&
+				           (sctp_is_feature_on(inp, SCTP_PCB_FLAGS_INTERLEAVE_STRMS)) &&
+				           (ctl->length > 0) &&
+				           ((ctl->some_taken) ||
+				            ((ctl->do_not_ref_stcb == 0) &&
+				             ((ctl->spec_flags & M_NOTIFICATION) == 0) &&
+				             (ctl->stcb->asoc.strmin[ctl->sinfo_stream].delivery_started == 0)))) {
 					/*-
 					 * If we have the same tcb, and there is data present, and we
 					 * have the strm interleave feature present. Then if we have
@@ -6416,7 +6413,6 @@ sctp_sorecvmsg(struct socket *so,
 					control = ctl;
 					goto found_one;
 				}
-				ctl = TAILQ_NEXT(ctl, next);
 			}
 		}
 		/*
@@ -6441,11 +6437,12 @@ sctp_sorecvmsg(struct socket *so,
 	}
 	control->some_taken++;
 	stcb = control->stcb;
-	if (stcb) {
+	if (stcb != NULL) {
 		if ((control->do_not_ref_stcb == 0) &&
 		    (stcb->asoc.state & SCTP_STATE_ABOUT_TO_BE_FREED)) {
-			if (freecnt_applied == 0)
+			if (freecnt_applied == 0) {
 				stcb = NULL;
+			}
 		} else if (control->do_not_ref_stcb == 0) {
 			/* you can't free it on me please */
 			/*
@@ -6477,7 +6474,7 @@ sctp_sorecvmsg(struct socket *so,
 			stcb->freed_by_sorcv_sincelast = 0;
 		}
 	}
-	if (stcb &&
+	if ((stcb != NULL) &&
 	    ((control->spec_flags & M_NOTIFICATION) == 0) &&
 	    control->do_not_ref_stcb == 0) {
 		stcb->asoc.strmin[control->sinfo_stream].delivery_started = 1;
@@ -6937,16 +6934,17 @@ sctp_sorecvmsg(struct socket *so,
 		if (control->length == 0) {
 			/* still nothing here */
 			if (control->end_added == 1) {
-				/* he aborted, or is done i.e.did a shutdown */
+				/* he aborted, or is done i.e. did a shutdown */
 				out_flags |= MSG_EOR;
 				if (control->pdapi_aborted) {
-					if ((control->do_not_ref_stcb == 0) && ((control->spec_flags & M_NOTIFICATION) == 0))
+					if ((control->do_not_ref_stcb == 0) && ((control->spec_flags & M_NOTIFICATION) == 0)) {
 						control->stcb->asoc.strmin[control->sinfo_stream].delivery_started = 0;
-
+					}
 					out_flags |= MSG_TRUNC;
 				} else {
-					if ((control->do_not_ref_stcb == 0) && ((control->spec_flags & M_NOTIFICATION) == 0))
+					if ((control->do_not_ref_stcb == 0) && ((control->spec_flags & M_NOTIFICATION) == 0)) {
 						control->stcb->asoc.strmin[control->sinfo_stream].delivery_started = 0;
+					}
 				}
 				goto done_with_control;
 			}
@@ -6993,8 +6991,9 @@ sctp_sorecvmsg(struct socket *so,
 			out_flags |= MSG_EOR;
 			if ((control->do_not_ref_stcb == 0) &&
 			    (control->stcb != NULL) &&
-			    ((control->spec_flags & M_NOTIFICATION) == 0))
+			    ((control->spec_flags & M_NOTIFICATION) == 0)) {
 				control->stcb->asoc.strmin[control->sinfo_stream].delivery_started = 0;
+			}
 		}
 		if (control->spec_flags & M_NOTIFICATION) {
 			out_flags |= MSG_NOTIFICATION;
@@ -7009,22 +7008,20 @@ sctp_sorecvmsg(struct socket *so,
 		uio->uio_resid = control->length;
 #endif
 		*mp = control->data;
-		m = control->data;
-		while (m) {
+		for (m = control->data; m != NULL; m = SCTP_BUF_NEXT(m)) {
 			if (SCTP_BASE_SYSCTL(sctp_logging_level) & SCTP_SB_LOGGING_ENABLE) {
 				sctp_sblog(&so->so_rcv,
 				   control->do_not_ref_stcb?NULL:stcb, SCTP_LOG_SBFREE, SCTP_BUF_LEN(m));
 			}
 			sctp_sbfree(control, stcb, &so->so_rcv, m);
-			freed_so_far += (uint32_t)SCTP_BUF_LEN(m);
-			freed_so_far += MSIZE;
+			freed_so_far += (uint32_t)SCTP_BUF_LEN(m) + MSIZE;
 			if (SCTP_BASE_SYSCTL(sctp_logging_level) & SCTP_SB_LOGGING_ENABLE) {
 				sctp_sblog(&so->so_rcv,
 				   control->do_not_ref_stcb?NULL:stcb, SCTP_LOG_SBRESULT, 0);
 			}
-			m = SCTP_BUF_NEXT(m);
 		}
-		control->data = control->tail_mbuf = NULL;
+		control->data = NULL;
+		control->tail_mbuf = NULL;
 		control->length = 0;
 		if (out_flags & MSG_EOR) {
 			/* Done with this control */
@@ -7064,19 +7061,21 @@ sctp_sorecvmsg(struct socket *so,
 	if ((stcb) && (in_flags & MSG_PEEK) == 0) {
 		if ((freed_so_far >= rwnd_req) &&
 		    (control && (control->do_not_ref_stcb == 0)) &&
-		    (no_rcv_needed == 0))
+		    (no_rcv_needed == 0)) {
 			sctp_user_rcvd(stcb, &freed_so_far, hold_rlock, rwnd_req);
+		}
 	}
  out:
-	if (msg_flags) {
+	if (msg_flags != NULL) {
 		*msg_flags = out_flags;
 	}
 	if (((out_flags & MSG_EOR) == 0) &&
 	    ((in_flags & MSG_PEEK) == 0) &&
-	    (sinfo) &&
+	    (sinfo != NULL) &&
 	    (sctp_is_feature_on(inp, SCTP_PCB_FLAGS_EXT_RCVINFO) ||
 	     sctp_is_feature_on(inp, SCTP_PCB_FLAGS_RECVNXTINFO))) {
 		struct sctp_extrcvinfo *s_extra;
+
 		s_extra = (struct sctp_extrcvinfo *)sinfo;
 		s_extra->serinfo_next_flags = SCTP_NO_NEXT_MSG;
 	}
@@ -7102,17 +7101,15 @@ sctp_sorecvmsg(struct socket *so,
 		if (stcb == NULL) {
 #ifdef INVARIANTS
 			panic("stcb for refcnt has gone NULL?");
-			goto stage_left;
-#else
-			goto stage_left;
 #endif
+			goto stage_left;
 		}
 		/* Save the value back for next time */
 		stcb->freed_by_sorcv_sincelast = freed_so_far;
 		atomic_subtract_int(&stcb->asoc.refcnt, 1);
 	}
 	if (SCTP_BASE_SYSCTL(sctp_logging_level) &SCTP_RECV_RWND_LOGGING_ENABLE) {
-		if (stcb) {
+		if (stcb != NULL) {
 			sctp_misc_ints(SCTP_SORECV_DONE,
 			               freed_so_far,
 #if defined(__APPLE__) && !defined(__Userspace__)
@@ -8162,11 +8159,10 @@ sctp_recv_udp_tunneled_packet(struct mbuf *m, int off, struct inpcb *inp,
 
 #ifdef INET
 static void
-sctp_recv_icmp_tunneled_packet(int cmd, struct sockaddr *sa, void *vip, void *ctx SCTP_UNUSED)
+sctp_recv_icmp_tunneled_packet(udp_tun_icmp_param_t param)
 {
 	struct ip *outer_ip, *inner_ip;
 	struct sctphdr *sh;
-	struct icmp *icmp;
 	struct udphdr *udp;
 	struct sctp_inpcb *inp;
 	struct sctp_tcb *stcb;
@@ -8175,9 +8171,7 @@ sctp_recv_icmp_tunneled_packet(int cmd, struct sockaddr *sa, void *vip, void *ct
 	struct sockaddr_in src, dst;
 	uint8_t type, code;
 
-	inner_ip = (struct ip *)vip;
-	icmp = (struct icmp *)((caddr_t)inner_ip -
-	    (sizeof(struct icmp) - sizeof(struct ip)));
+	inner_ip = &icmp->icmp_ip;
 	outer_ip = (struct ip *)((caddr_t)icmp - sizeof(struct ip));
 	if (ntohs(outer_ip->ip_len) <
 	    sizeof(struct ip) + 8 + (inner_ip->ip_hl << 2) + sizeof(struct udphdr) + 8) {
@@ -8295,9 +8289,9 @@ sctp_recv_icmp_tunneled_packet(int cmd, struct sockaddr *sa, void *vip, void *ct
 
 #ifdef INET6
 static void
-sctp_recv_icmp6_tunneled_packet(int cmd, struct sockaddr *sa, void *d, void *ctx SCTP_UNUSED)
+sctp_recv_icmp6_tunneled_packet(udp_tun_icmp_param_t param)
 {
-	struct ip6ctlparam *ip6cp;
+	struct ip6ctlparam *ip6cp = param.ip6cp;
 	struct sctp_inpcb *inp;
 	struct sctp_tcb *stcb;
 	struct sctp_nets *net;
@@ -8306,7 +8300,6 @@ sctp_recv_icmp6_tunneled_packet(int cmd, struct sockaddr *sa, void *d, void *ctx
 	struct sockaddr_in6 src, dst;
 	uint8_t type, code;
 
-	ip6cp = (struct ip6ctlparam *)d;
 	/*
 	 * XXX: We assume that when IPV6 is non NULL, M and OFF are
 	 * valid.
