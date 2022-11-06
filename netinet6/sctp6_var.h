@@ -72,7 +72,7 @@ int sctp6_output(struct sctp_inpcb *, struct mbuf *, struct sockaddr *,
 #if defined(__APPLE__) && !defined(__Userspace__) && !defined(APPLE_LEOPARD) && !defined(APPLE_SNOWLEOPARD) && !defined(APPLE_LION) && !defined(APPLE_MOUNTAINLION) && !defined(APPLE_ELCAPITAN)
 void sctp6_ctlinput(int, struct sockaddr *, void *, struct ifnet * SCTP_UNUSED);
 #elif defined(__FreeBSD__) && !defined(__Userspace__)
-ip6proto_ctlinput_t	sctp6_ctlinput;
+ip6proto_ctlinput_t sctp6_ctlinput;
 #else
 void sctp6_ctlinput(int, struct sockaddr_in6 *, ip6ctlparam *);
 #endif
