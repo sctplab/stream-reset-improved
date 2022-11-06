@@ -8904,7 +8904,7 @@ struct protosw sctp_stream_protosw = {
 	SCTP_PROTOSW
 #else
 struct pr_usrreqs sctp_usrreqs = {
-if defined(__APPLE__)
+#if defined(__APPLE__)
 	.pru_abort = sctp_abort,
 	.pru_accept = sctp_accept,
 	.pru_attach = sctp_attach,
