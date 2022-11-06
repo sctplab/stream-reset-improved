@@ -1820,6 +1820,7 @@ struct pr_usrreqs sctp6_usrreqs = {
 	sctp6_close
 };
 #endif
+#endif
 
 int
 sctp6_usrreq(so, req, m, nam, control, p)
