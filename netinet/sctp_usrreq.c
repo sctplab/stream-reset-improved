@@ -8902,6 +8902,7 @@ struct protosw sctp_stream_protosw = {
 	.pr_type =      SOCK_STREAM,
 	.pr_flags =	PR_CONNREQUIRED | PR_WANTRCVD,
 	SCTP_PROTOSW
+};
 #else
 struct pr_usrreqs sctp_usrreqs = {
 #if defined(__APPLE__)
