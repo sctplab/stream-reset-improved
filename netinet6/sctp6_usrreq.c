@@ -1773,7 +1773,7 @@ struct protosw sctp6_stream_protosw = {
 };
 #else
 struct pr_usrreqs sctp6_usrreqs = {
-if defined(__APPLE__) && !defined(__Userspace__)
+#if defined(__APPLE__) && !defined(__Userspace__)
 	.pru_abort = sctp6_abort,
 	.pru_accept = sctp_accept,
 	.pru_attach = sctp6_attach,
