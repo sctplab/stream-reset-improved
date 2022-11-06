@@ -1761,14 +1761,14 @@ sctp6_getpeeraddr(struct socket *so, struct mbuf *nam)
 	.pr_soreceive =	sctp_soreceive
 
 struct protosw sctp6_seqpacket_protosw = {
-	.pr_type =	SOCK_SEQPACKET,
-	.pr_flags =	PR_WANTRCVD,
+	.pr_type = SOCK_SEQPACKET,
+	.pr_flags = PR_WANTRCVD,
 	SCTP6_PROTOSW
 };
 
 struct protosw sctp6_stream_protosw = {
-	.pr_type =	SOCK_STREAM,
-	.pr_flags =	PR_CONNREQUIRED | PR_WANTRCVD,
+	.pr_type = SOCK_STREAM,
+	.pr_flags = PR_CONNREQUIRED | PR_WANTRCVD,
 	SCTP6_PROTOSW
 };
 #else
@@ -1819,7 +1819,6 @@ struct pr_usrreqs sctp6_usrreqs = {
 	NULL,
 	sctp6_close
 };
-#endif
 #endif
 
 int
@@ -1933,5 +1932,6 @@ sctp6_usrreq(so, req, m, nam, control, p)
 	}
 	return (error);
 }
+#endif
 #endif
 #endif
