@@ -423,6 +423,7 @@ sctp6_ctlinput(struct ip6ctlparam *ip6cp)
 	    (int32_t)(ip6cp->ip6c_off + offsetof(struct sctphdr, checksum))) {
 		return;
 	}
+
 	/* Copy out the port numbers and the verification tag. */
 	memset(&sh, 0, sizeof(sh));
 	m_copydata(ip6cp->ip6c_m,

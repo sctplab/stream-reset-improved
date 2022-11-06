@@ -400,7 +400,6 @@ void sctp_ctlinput(struct icmp *icmp)
 	struct sctp_init_chunk *ch;
 	struct sockaddr_in src, dst;
 
-
 	if (icmp_errmap(icmp) == 0)
 		return;
 
