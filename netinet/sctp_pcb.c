@@ -8018,6 +8018,7 @@ sctp_drain(void)
 EVENTHANDLER_DEFINE(vm_lowmem, sctp_drain, NULL, LOWMEM_PRI_DEFAULT);
 EVENTHANDLER_DEFINE(mbuf_lowmem, sctp_drain, NULL, LOWMEM_PRI_DEFAULT);
 #endif
+
 /*
  * start a new iterator
  * iterates through all endpoints and associations based on the pcb_state
