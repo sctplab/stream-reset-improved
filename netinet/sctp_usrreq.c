@@ -390,7 +390,7 @@ sctp_notify(struct sctp_inpcb *inp,
 
 #if !defined(__Userspace__)
 #if defined(__FreeBSD__)
-sctp_ctlinput(struct icmp *icmp)
+void sctp_ctlinput(struct icmp *icmp)
 {
 	struct ip *inner_ip, *outer_ip;
 	struct sctphdr *sh;
@@ -8953,127 +8953,6 @@ struct pr_usrreqs sctp_usrreqs = {
 #endif
 };
 #endif
-
-int
-sctp_usrreq(so, req, m, nam, control)
-	struct socket *so;
-	int req;
-	struct mbuf *m, *nam, *control;
-{
-	struct proc *p = curproc;
-	int error;
-	int family;
-	struct sctp_inpcb *inp = (struct sctp_inpcb *)so->so_pcb;
-
-	error = 0;
-	family = so->so_proto->pr_domain->dom_family;
-	if (req == PRU_CONTROL) {
-		switch (family) {
-		case PF_INET:
-			error = in_control(so, (long)m, (caddr_t)nam,
-			    (struct ifnet *)control);
-			break;
-#ifdef INET6
-		case PF_INET6:
-			error = in6_control(so, (long)m, (caddr_t)nam,
-			    (struct ifnet *)control, p);
-			break;
-#endif
-		default:
-			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EAFNOSUPPORT);
-			error = EAFNOSUPPORT;
-		}
-		return (error);
-	}
-	switch (req) {
-	case PRU_ATTACH:
-		error = sctp_attach(so, family, p);
-		break;
-	case PRU_DETACH:
-		error = sctp_detach(so);
-		break;
-	case PRU_BIND:
-		if (nam == NULL) {
-			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EINVAL);
-			return (EINVAL);
-		}
-		error = sctp_bind(so, nam, p);
-		break;
-	case PRU_LISTEN:
-		error = sctp_listen(so, p);
-		break;
-	case PRU_CONNECT:
-		if (nam == NULL) {
-			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EINVAL);
-			return (EINVAL);
-		}
-		error = sctp_connect(so, nam, p);
-		break;
-	case PRU_DISCONNECT:
-		error = sctp_disconnect(so);
-		break;
-	case PRU_ACCEPT:
-		if (nam == NULL) {
-			SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EINVAL);
-			return (EINVAL);
-		}
-		error = sctp_accept(so, nam);
-		break;
-	case PRU_SHUTDOWN:
-		error = sctp_shutdown(so);
-		break;
-
-	case PRU_RCVD:
-		/*
-		 * For Open and Net BSD, this is real ugly. The mbuf *nam
-		 * that is passed (by soreceive()) is the int flags c ast as
-		 * a (mbuf *) yuck!
-		 */
-		break;
-
-	case PRU_SEND:
-		/* Flags are ignored */
-		{
-			struct sockaddr *addr;
-
-			if (nam == NULL)
-				addr = NULL;
-			else
-				addr = mtod(nam, struct sockaddr *);
-
-			error = sctp_sendm(so, 0, m, addr, control, p);
-		}
-		break;
-	case PRU_ABORT:
-		error = sctp_abort(so);
-		break;
-
-	case PRU_SENSE:
-		error = 0;
-		break;
-	case PRU_RCVOOB:
-		SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EAFNOSUPPORT);
-		error = EAFNOSUPPORT;
-		break;
-	case PRU_SENDOOB:
-		SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_USRREQ, EAFNOSUPPORT);
-		error = EAFNOSUPPORT;
-		break;
-	case PRU_PEERADDR:
-		error = sctp_peeraddr(so, nam);
-		break;
-	case PRU_SOCKADDR:
-		error = sctp_ingetaddr(so, nam);
-		break;
-	case PRU_SLOWTIMO:
-		error = 0;
-		break;
-	default:
-		break;
-	}
-	return (error);
-}
-
 #endif
 #endif
 
