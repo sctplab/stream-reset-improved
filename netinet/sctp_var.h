@@ -377,7 +377,7 @@ int sctp_disconnect(struct socket *so);
 #if defined(__APPLE__) && !defined(APPLE_LEOPARD) && !defined(APPLE_SNOWLEOPARD) && !defined(APPLE_LION) && !defined(APPLE_MOUNTAINLION) && !defined(APPLE_ELCAPITAN)
 void sctp_ctlinput(int, struct sockaddr *, void *, struct ifnet * SCTP_UNUSED);
 #elif defined(__FreeBSD__)
-void ipproto_ctlinput_t sctp_ctlinput;
+ipproto_ctlinput_t sctp_ctlinput;
 #else
 void sctp_ctlinput(int, struct sockaddr *, void *);
 #endif
