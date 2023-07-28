@@ -353,6 +353,14 @@ sctp_get_tick_count(void)
 /* number of bytes ready to read */
 #define SCTP_SBAVAIL(sb)	(sb)->sb_cc
 /* clear the socket buffer state */
+#define SCTP_SB_INCR(sb, incr)			\
+{						\
+	atomic_add_int(&(sb)->sb_cc, incr);	\
+}
+#define SCTP_SB_DECR(sb, decr)				\
+{							\
+	SCTP_SAVE_ATOMIC_DECREMENT(&(sb)->sb_cc, incr);	\
+}
 #define SCTP_SB_CLEAR(sb) do { \
 	(sb).sb_cc = 0; \
 	(sb).sb_mb = NULL; \
