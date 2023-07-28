@@ -304,8 +304,7 @@ typedef struct callout sctp_os_timer_t;
  * and sctp_timer_stop(), since they don't handle incrementing/decrementing
  * relevant reference counts.
  */
-#define SCTP_OS_TIMER_START(c, to_ticks, fn, arg) \
-  callout_reset_sbt_on((c), tick_sbt * (to_ticks), 0, (fn), (arg), -1, C_HARDCLOCK)
+#define SCTP_OS_TIMER_START		callout_reset
 #define SCTP_OS_TIMER_STOP		callout_stop
 #define SCTP_OS_TIMER_STOP_DRAIN	callout_drain
 #define SCTP_OS_TIMER_PENDING		callout_pending
