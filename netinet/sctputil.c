@@ -3795,7 +3795,7 @@ sctp_notify_partial_delivery_indication(struct sctp_tcb *stcb, uint32_t error,
 		return;
 	}
 
-	SCTP_INP_READ_LOCK_ASSERT(&stcb->sctp_ep);
+	SCTP_INP_READ_LOCK_ASSERT(stcb->sctp_ep);
 
 	m_notify = sctp_get_mbuf_for_msg(sizeof(struct sctp_pdapi_event), 0, M_NOWAIT, 1, MT_DATA);
 	if (m_notify == NULL)
