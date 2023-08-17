@@ -32,6 +32,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#if defined(__FreeBSD__) && !defined(__Userspace__)
 #include <sys/cdefs.h>
 #include "opt_sctp.h"
 
