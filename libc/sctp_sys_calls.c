@@ -34,9 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
 #endif
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
