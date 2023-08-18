@@ -1487,7 +1487,7 @@ sctp_set_rtcc_initial_cc_param(struct sctp_tcb *stcb,
                                struct sctp_nets *net)
 {
 #if defined(__FreeBSD__) && !defined(__Userspace__)
-	uint64_t vtag __unused, probepoint __unused;
+	uint64_t vtag __dtrace, probepoint __dtrace;
 
 #endif
 	sctp_set_initial_cc_param(stcb, net);
