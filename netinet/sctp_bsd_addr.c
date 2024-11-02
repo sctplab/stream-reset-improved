@@ -714,11 +714,9 @@ sctp_addr_change(struct ifaddr *ifa, int cmd)
 	} else {
 		sctp_del_addr_from_vrf(SCTP_DEFAULT_VRFID, ifa->ifa_addr,
 #if defined(__APPLE__) && !defined(__Userspace__)
-		                       ifnet_index(ifa->ifa_ifp),
-		                       ifnet_name(ifa->ifa_ifp));
+		                       ifnet_index(ifa->ifa_ifp));
 #else
-		                       ifa->ifa_ifp->if_index,
-		                       ifa->ifa_ifp->if_xname);
+		                       ifa->ifa_ifp->if_index);
 #endif
 
 		/* We don't bump refcount here so when it completes
