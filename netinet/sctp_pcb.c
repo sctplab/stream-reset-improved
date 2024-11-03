@@ -252,7 +252,9 @@ sctp_find_ifn(void *ifn, uint32_t ifn_index)
 	struct sctp_ifnlist *hash_ifn_head;
 
 	SCTP_IPI_ADDR_LOCK_ASSERT();
+#if defined(__FreeBSD__) && !defined(__Userspace__)
 	KASSERT(ifn != NULL, ("sctp_find_ifn(NULL, %u) called", ifn_index));
+#endif
 	hash_ifn_head = &SCTP_BASE_INFO(vrf_ifn_hash)[(ifn_index & SCTP_BASE_INFO(vrf_ifn_hashmark))];
 	LIST_FOREACH(sctp_ifnp, hash_ifn_head, next_bucket) {
 		if (sctp_ifnp->ifn_index == ifn_index &&
@@ -419,9 +421,9 @@ sctp_remove_ifa_from_ifn(struct sctp_ifa *sctp_ifap)
 
 struct sctp_ifa *
 sctp_add_addr_to_vrf(uint32_t vrf_id, void *ifn, uint32_t ifn_index,
-		     uint32_t ifn_type, const char *if_name, void *ifa,
-		     struct sockaddr *addr, uint32_t ifa_flags,
-		     int dynamic_add)
+                     uint32_t ifn_type, const char *if_name, void *ifa,
+                     struct sockaddr *addr, uint32_t ifa_flags,
+                     int dynamic_add)
 {
 	struct sctp_vrf *vrf;
 	struct sctp_ifn *sctp_ifnp, *new_sctp_ifnp;
@@ -689,7 +691,7 @@ sctp_add_addr_to_vrf(uint32_t vrf_id, void *ifn, uint32_t ifn_index,
 
 void
 sctp_del_addr_from_vrf(uint32_t vrf_id, struct sockaddr *addr,
-                        void *ifn, uint32_t ifn_index)
+                       void *ifn, uint32_t ifn_index)
 {
 	struct sctp_vrf *vrf;
 	struct sctp_ifa *sctp_ifap;
@@ -712,7 +714,7 @@ sctp_del_addr_from_vrf(uint32_t vrf_id, struct sockaddr *addr,
 		if (sctp_ifap->ifn_p) {
 			if (ifn_index != sctp_ifap->ifn_p->ifn_index ||
 			    ifn != sctp_ifap->ifn_p->ifn_p) {
-				SCTPDBG(SCTP_DEBUG_PCB4, "ifn:%d (p) ifname:%s - ignoring delete\n",
+				SCTPDBG(SCTP_DEBUG_PCB4, "ifn:%d (%p) ifname:%s - ignoring delete\n",
 				        sctp_ifap->ifn_p->ifn_index,
 				        sctp_ifap->ifn_p->ifn_p,
 				        sctp_ifap->ifn_p->ifn_name);
