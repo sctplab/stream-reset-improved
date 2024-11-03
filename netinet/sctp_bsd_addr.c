@@ -713,6 +713,7 @@ sctp_addr_change(struct ifaddr *ifa, int cmd)
 		                           (void *)ifa, ifa->ifa_addr, ifa_flags, 1);
 	} else {
 		sctp_del_addr_from_vrf(SCTP_DEFAULT_VRFID, ifa->ifa_addr,
+		                       (void *)ifa->ifa_ifp,
 #if defined(__APPLE__) && !defined(__Userspace__)
 		                       ifnet_index(ifa->ifa_ifp));
 #else
