@@ -513,6 +513,7 @@ sctp_add_addr_to_vrf(uint32_t vrf_id, void *ifn, uint32_t ifn_index,
 					SCTPDBG(SCTP_DEBUG_PCB4,
 					"Clearing deleted ifa flag\n");
 					sctp_ifap->localifa_flags = SCTP_ADDR_VALID;
+					sctp_gather_internal_ifa_flags(sctp_ifap);
 					sctp_ifap->ifn_p = sctp_ifnp;
 					atomic_add_int(&sctp_ifap->ifn_p->refcount, 1);
 				}
@@ -535,6 +536,7 @@ sctp_add_addr_to_vrf(uint32_t vrf_id, void *ifn, uint32_t ifn_index,
 		} else {
 			/* Repair ifn_p, which was NULL... */
 			sctp_ifap->localifa_flags = SCTP_ADDR_VALID;
+			sctp_gather_internal_ifa_flags(sctp_ifap);
 			SCTPDBG(SCTP_DEBUG_PCB4,
 			    "Repairing ifn %p for ifa %p\n",
 			    (void *)sctp_ifnp, (void *)sctp_ifap);
@@ -582,7 +584,7 @@ sctp_add_addr_to_vrf(uint32_t vrf_id, void *ifn, uint32_t ifn_index,
 	}
 #endif
 	sctp_ifap->localifa_flags = SCTP_ADDR_VALID | SCTP_ADDR_DEFER_USE;
-	sctp_ifap->flags = ifa_flags;
+	sctp_gather_internal_ifa_flags(sctp_ifap);
 	/* Set scope */
 	switch (sctp_ifap->address.sa.sa_family) {
 #ifdef INET
@@ -723,7 +725,7 @@ sctp_del_addr_from_vrf(uint32_t vrf_id, struct sockaddr *addr,
 			}
 		}
 		SCTPDBG(SCTP_DEBUG_PCB4, "Deleting ifa %p\n", (void *)sctp_ifap);
-		sctp_ifap->localifa_flags &= SCTP_ADDR_VALID;
+		sctp_ifap->localifa_flags &= ~SCTP_ADDR_VALID;
 		/*
 		 * We don't set the flag. This means that the structure will
 		 * hang around in EP's that have bound specific to it until
@@ -3600,7 +3602,7 @@ sctp_inpcb_bind_locked(struct sctp_inpcb *inp, struct sockaddr *addr,
 			/* GAK, more FIXME IFA lock? */
 			if (ifa->localifa_flags & SCTP_ADDR_IFA_UNUSEABLE) {
 				/* Can't bind a non-existent addr. */
-				error = EINVAL;
+				error = EADDRNOTAVAIL;
 				SCTP_LTRACE_ERR_RET(inp, NULL, NULL, SCTP_FROM_SCTP_PCB, error);
 				goto out;
 			}
